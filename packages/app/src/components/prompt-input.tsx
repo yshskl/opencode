@@ -652,7 +652,10 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     key: (x) => x?.id,
     filterKeys: ["trigger", "title"],
     onSelect: handleSlashSelect,
-    groupBy: (x) => x.category ?? "",
+    groupBy: (x) => {
+      if (x.type === "custom") return x.source ?? "other"
+      return x.category ?? "builtin"
+    },
   })
 
   const createPill = (part: FileAttachmentPart | AgentPart) => {
