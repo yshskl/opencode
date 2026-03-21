@@ -55,6 +55,10 @@ export const dict = {
 
   "command.session.new": "新建会话",
 
+  "command.sessions.title": "会话列表",
+  "command.sessions.search": "搜索会话...",
+  "command.sessions.empty": "未找到会话",
+
   "command.file.open": "打开文件",
 
   "command.tab.close": "关闭标签页",

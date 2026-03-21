@@ -15,6 +15,7 @@ import { DialogSelectFile } from "@/components/dialog-select-file"
 import { DialogSelectModel } from "@/components/dialog-select-model"
 import { DialogSelectMcp } from "@/components/dialog-select-mcp"
 import { DialogFork } from "@/components/dialog-fork"
+import { DialogSessionList } from "@/components/dialog-session-list"
 import { showToast } from "@opencode-ai/ui/toast"
 import { findLast } from "@opencode-ai/util/array"
 import { createSessionTabs } from "@/pages/session/helpers"
@@ -250,6 +251,12 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
         keybind: "mod+shift+s",
         slash: "new",
         onSelect: () => navigate(`/${params.dir}/session`),
+      }),
+      sessionCommand({
+        id: "session.list",
+        title: language.t("command.sessions.title"),
+        slash: "sessions",
+        onSelect: () => dialog.show(() => <DialogSessionList />),
       }),
       fileCommand({
         id: "file.open",

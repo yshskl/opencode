@@ -45,6 +45,9 @@ export const dict = {
   "command.language.set": "Use language: {{language}}",
 
   "command.session.new": "New session",
+  "command.sessions.title": "Sessions",
+  "command.sessions.search": "Search sessions...",
+  "command.sessions.empty": "No sessions found",
   "command.file.open": "Open file",
   "command.tab.close": "Close tab",
   "command.context.addSelection": "Add selection to context",
