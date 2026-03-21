@@ -18,6 +18,19 @@ type SessionInfo = {
   complete?: boolean
 }
 
+async function migrateSession(sessionID: string, newDirectory: string, baseUrl: string): Promise<void> {
+  const response = await fetch(`${baseUrl}/session/${sessionID}/migrate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ directory: newDirectory }),
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to migrate session: ${response.statusText}`)
+  }
+}
+
 export function DialogSessionList() {
   const dialog = useDialog()
   const navigate = useNavigate()
@@ -62,10 +75,7 @@ export function DialogSessionList() {
     if (!session) return
 
     try {
-      await sdk.client.session.migrate({
-        path: { sessionID: session.id },
-        body: { directory: newDirectory },
-      })
+      await migrateSession(session.id, newDirectory, sdk.url)
       showToast({
         title: language.t("command.sessions.migrate.success"),
       })
