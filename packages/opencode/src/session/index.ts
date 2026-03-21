@@ -683,6 +683,32 @@ export namespace Session {
     }
   })
 
+  export const migrate = fn(
+    z.object({
+      sessionID: SessionID.zod,
+      directory: z.string(),
+    }),
+    async (input) => {
+      const time = Date.now()
+      return Database.use((db) => {
+        const row = db
+          .update(SessionTable)
+          .set({ directory: input.directory, time_updated: time })
+          .where(eq(SessionTable.id, input.sessionID))
+          .returning()
+          .get()
+        if (!row) throw NotFoundError({ message: `Session not found: ${input.sessionID}` })
+        const info = fromRow(row)
+        Database.effect(() =>
+          Bus.publish(Event.Updated, {
+            info,
+          }),
+        )
+        return info
+      })
+    },
+  )
+
   export const updateMessage = fn(MessageV2.Info, async (msg) => {
     const time_created = msg.time.created
     const { id, sessionID, ...data } = msg

@@ -1019,5 +1019,45 @@ export const SessionRoutes = lazy(() =>
         })
         return c.json(true)
       },
+    )
+    .post(
+      "/:sessionID/migrate",
+      describeRoute({
+        summary: "Migrate session",
+        description: "Migrate a session to a different project directory.",
+        operationId: "session.migrate",
+        responses: {
+          200: {
+            description: "Session migrated successfully",
+            content: {
+              "application/json": {
+                schema: resolver(Session.Info),
+              },
+            },
+          },
+          ...errors(400, 404),
+        },
+      }),
+      validator(
+        "param",
+        z.object({
+          sessionID: SessionID.zod,
+        }),
+      ),
+      validator(
+        "json",
+        z.object({
+          directory: z.string().meta({ description: "New project directory" }),
+        }),
+      ),
+      async (c) => {
+        const params = c.req.valid("param")
+        const body = c.req.valid("json")
+        const session = await Session.migrate({
+          sessionID: params.sessionID,
+          directory: body.directory,
+        })
+        return c.json(session)
+      },
     ),
 )

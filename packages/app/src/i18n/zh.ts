@@ -58,6 +58,10 @@ export const dict = {
   "command.sessions.title": "会话列表",
   "command.sessions.search": "搜索会话...",
   "command.sessions.empty": "未找到会话",
+  "command.sessions.migrate.button": "迁移",
+  "command.sessions.migrate.title": "选择项目目录",
+  "command.sessions.migrate.success": "会话迁移成功",
+  "command.sessions.migrate.error": "会话迁移失败",
 
   "command.file.open": "打开文件",
 
