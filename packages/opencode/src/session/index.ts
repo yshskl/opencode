@@ -691,13 +691,14 @@ export namespace Session {
     async (input) => {
       const time = Date.now()
       return Database.use((db) => {
-        const row = db
+        const rows = db
           .update(SessionTable)
           .set({ directory: input.directory, time_updated: time })
           .where(eq(SessionTable.id, input.sessionID))
           .returning()
-          .get()
-        if (!row) throw NotFoundError({ message: `Session not found: ${input.sessionID}` })
+          .all()
+        const row = rows[0]
+        if (!row) throw new Error(`Session not found: ${input.sessionID}`)
         const info = fromRow(row)
         Database.effect(() =>
           Bus.publish(Event.Updated, {
