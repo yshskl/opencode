@@ -606,6 +606,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         description: opt.description,
         keybind: opt.keybind,
         type: "builtin" as const,
+        category: opt.category,
       }))
 
     const custom = sync.data.command.map((cmd) => ({
@@ -615,9 +616,44 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       description: cmd.description,
       type: "custom" as const,
       source: cmd.source,
+      category: cmd.source === "command"
+        ? language.t("command.category.custom")
+        : cmd.source === "mcp"
+          ? language.t("command.category.mcp")
+          : cmd.source === "skill"
+            ? language.t("command.category.skill")
+            : undefined,
     }))
 
-    return [...custom, ...builtin]
+    const grouped = []
+    const categories = [
+      language.t("command.category.session"),
+      language.t("command.category.file"),
+      language.t("command.category.view"),
+      language.t("command.category.context"),
+      language.t("command.category.terminal"),
+      language.t("command.category.model"),
+      language.t("command.category.agent"),
+      language.t("command.category.mcp"),
+      language.t("command.category.skill"),
+      language.t("command.category.custom"),
+      language.t("command.category.permissions"),
+    ]
+
+    for (const cat of categories) {
+      const inGroup = [...builtin, ...custom].filter((c) => c.category === cat)
+      if (inGroup.length > 0) {
+        grouped.push({ category: cat } as SlashCommand)
+        grouped.push(...inGroup)
+      }
+    }
+
+    const uncategorized = [...builtin, ...custom].filter((c) => !c.category)
+    if (uncategorized.length > 0) {
+      grouped.push(...uncategorized)
+    }
+
+    return grouped
   })
 
   const handleSlashSelect = (cmd: SlashCommand | undefined) => {

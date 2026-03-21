@@ -20,6 +20,8 @@ export const dict = {
   "command.category.permissions": "权限",
   "command.category.workspace": "工作区",
   "command.category.settings": "设置",
+  "command.category.skill": "技能",
+  "command.category.custom": "自定义",
 
   "theme.scheme.system": "系统",
   "theme.scheme.light": "浅色",

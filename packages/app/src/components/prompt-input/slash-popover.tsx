@@ -15,6 +15,7 @@ export interface SlashCommand {
   keybind?: string
   type: "builtin" | "custom"
   source?: "command" | "mcp" | "skill"
+  category?: string
 }
 
 type PromptPopoverProps = {
@@ -99,38 +100,40 @@ export const PromptPopover: Component<PromptPopoverProps> = (props) => {
               fallback={<div class="text-text-weak px-2 py-1">{props.t("prompt.popover.emptyCommands")}</div>}
             >
               <For each={props.slashFlat}>
-                {(cmd) => (
-                  <button
-                    data-slash-id={cmd.id}
-                    classList={{
-                      "w-full flex items-center justify-between gap-4 rounded-md px-2 py-1": true,
-                      "bg-surface-raised-base-hover": props.slashActive === cmd.id,
-                    }}
-                    onClick={() => props.onSlashSelect(cmd)}
-                    onMouseEnter={() => props.setSlashActive(cmd.id)}
-                  >
-                    <div class="flex items-center gap-2 min-w-0">
-                      <span class="text-14-regular text-text-strong whitespace-nowrap">/{cmd.trigger}</span>
-                      <Show when={cmd.description}>
-                        <span class="text-14-regular text-text-weak truncate">{cmd.description}</span>
-                      </Show>
-                    </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                      <Show when={cmd.type === "custom" && cmd.source !== "command"}>
-                        <span class="text-11-regular text-text-subtle px-1.5 py-0.5 bg-surface-base rounded">
-                          {cmd.source === "skill"
-                            ? props.t("prompt.slash.badge.skill")
-                            : cmd.source === "mcp"
-                              ? props.t("prompt.slash.badge.mcp")
-                              : props.t("prompt.slash.badge.custom")}
-                        </span>
-                      </Show>
-                      <Show when={props.commandKeybind(cmd.id)}>
-                        <span class="text-12-regular text-text-subtle">{props.commandKeybind(cmd.id)}</span>
-                      </Show>
-                    </div>
-                  </button>
-                )}
+                {(item) => {
+                  if (item === null || typeof item !== "object") return null
+                  if ("category" in item && item.category) {
+                    return (
+                      <div class="px-2 py-1 text-11-regular text-text-subtle uppercase tracking-wide font-medium">
+                        {item.category}
+                      </div>
+                    )
+                  }
+                  const cmd = item as SlashCommand
+                  return (
+                    <button
+                      data-slash-id={cmd.id}
+                      classList={{
+                        "w-full flex items-center justify-between gap-4 rounded-md px-2 py-1": true,
+                        "bg-surface-raised-base-hover": props.slashActive === cmd.id,
+                      }}
+                      onClick={() => props.onSlashSelect(cmd)}
+                      onMouseEnter={() => props.setSlashActive(cmd.id)}
+                    >
+                      <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-14-regular text-text-strong whitespace-nowrap">/{cmd.trigger}</span>
+                        <Show when={cmd.description}>
+                          <span class="text-14-regular text-text-weak truncate">{cmd.description}</span>
+                        </Show>
+                      </div>
+                      <div class="flex items-center gap-2 shrink-0">
+                        <Show when={props.commandKeybind(cmd.id)}>
+                          <span class="text-12-regular text-text-subtle">{props.commandKeybind(cmd.id)}</span>
+                        </Show>
+                      </div>
+                    </button>
+                  )
+                }}
               </For>
             </Show>
           </Match>
