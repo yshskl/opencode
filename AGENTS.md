@@ -1,10 +1,93 @@
+# Agent Guidelines
+
 - To regenerate the JavaScript SDK, run `./packages/sdk/js/script/build.ts`.
 - ALWAYS USE PARALLEL TOOLS WHEN APPLICABLE.
 - The default branch in this repo is `dev`.
 - Local `main` ref may not exist; use `dev` or `origin/dev` for diffs.
 - Prefer automation: execute requested actions without confirmation unless blocked by missing info or safety/irreversibility.
 
-## Style Guide
+---
+
+## Build/Lint/Test Commands
+
+### Root Commands
+
+```bash
+bun typecheck              # Type-check all packages (via turbo)
+bun run dev                # Run opencode CLI dev mode
+bun run dev:web            # Run web app dev server
+bun run dev:desktop        # Run Tauri desktop app
+bun run dev:console        # Run console app
+```
+
+### Package-specific Commands (run from package directory)
+
+#### packages/opencode
+
+```bash
+bun run typecheck          # Type-check (tsgo --noEmit)
+bun run test               # Run tests (bun test --timeout 30000)
+bun run dev                # CLI dev mode
+bun run db generate        # Generate Drizzle migration (bun drizzle-kit generate)
+bun run db push            # Push schema changes (bun drizzle-kit push)
+```
+
+#### packages/app
+
+```bash
+bun run typecheck          # Type-check (tsgo -b)
+bun run dev                # Vite dev server
+bun run build              # Production build
+bun run test:unit          # Unit tests (bun test --preload ./happydom.ts ./src)
+bun run test:unit:watch    # Unit tests in watch mode
+bun run test:e2e           # Playwright e2e tests
+bun run test:e2e:local     # Local e2e tests
+bun run test:e2e:ui        # E2e tests with UI
+bun run test:e2e:report    # Show e2e report
+```
+
+#### packages/desktop
+
+```bash
+bun run typecheck
+bun run dev                # Vite dev (uses predev script)
+bun run build              # Build with typecheck + vite build
+```
+
+#### packages/desktop-electron
+
+```bash
+bun run typecheck
+bun run dev                # electron-vite dev
+bun run build              # electron-vite build
+bun run package:win        # Build Windows installer
+bun run package:mac        # Build macOS app
+bun run package:linux      # Build Linux app
+```
+
+#### packages/console/app
+
+```bash
+bun run typecheck
+bun run dev                # Vite dev server
+bun run build              # Full build with schema generation
+```
+
+### Testing Rules
+
+- Tests **cannot run from repo root** (guard: `do-not-run-tests-from-root`)
+- Run tests from package directories: `cd packages/opencode && bun run test`
+- Avoid mocks; test actual implementation
+- Single test: use `bun test --timeout 30000 <path>` in the package dir
+
+### Type Checking
+
+- Always use `bun run typecheck` or `tsgo` directly, **never `tsc` directly**
+- Most packages use `tsgo --noEmit`, some use `tsgo -b` (build mode)
+
+---
+
+## Code Style Guidelines
 
 ### General Principles
 
@@ -13,23 +96,15 @@
 - Avoid using the `any` type
 - Prefer single word variable names where possible
 - Use Bun APIs when possible, like `Bun.file()`
-- Rely on type inference when possible; avoid explicit type annotations or interfaces unless necessary for exports or clarity
-- Prefer functional array methods (flatMap, filter, map) over for loops; use type guards on filter to maintain type inference downstream
+- Rely on type inference; avoid explicit type annotations unless necessary for exports or clarity
+- Prefer functional array methods (`flatMap`, `filter`, `map`) over for loops
+- Use type guards on `filter` to maintain type inference
 
 ### Naming
 
-Prefer single word names for variables and functions. Only use multiple words if necessary.
+**MANDATORY RULE**: Use single word names by default for new locals, params, and helper functions.
 
-### Naming Enforcement (Read This)
-
-THIS RULE IS MANDATORY FOR AGENT WRITTEN CODE.
-
-- Use single word names by default for new locals, params, and helper functions.
-- Multi-word names are allowed only when a single word would be unclear or ambiguous.
-- Do not introduce new camelCase compounds when a short single-word alternative is clear.
-- Before finishing edits, review touched lines and shorten newly introduced identifiers where possible.
-- Good short names to prefer: `pid`, `cfg`, `err`, `opts`, `dir`, `root`, `child`, `state`, `timeout`.
-- Examples to avoid unless truly required: `inputPID`, `existingClient`, `connectTimeout`, `workerPath`.
+Multi-word names allowed only when a single word would be unclear or ambiguous. Good short names: `pid`, `cfg`, `err`, `opts`, `dir`, `root`, `child`, `state`, `timeout`.
 
 ```ts
 // Good
@@ -41,7 +116,7 @@ const fooBar = 1
 function prepareJournal(dir: string) {}
 ```
 
-Reduce total variable count by inlining when a value is only used once.
+Reduce variable count by inlining when a value is only used once:
 
 ```ts
 // Good
@@ -52,9 +127,21 @@ const journalPath = path.join(dir, "journal.json")
 const journal = await Bun.file(journalPath).json()
 ```
 
+### Imports
+
+Group imports logically:
+
+```ts
+import path from "path"
+import fs from "fs/promises"
+import { createWriteStream } from "fs"
+import { Global } from "../global"
+import z from "zod"
+```
+
 ### Destructuring
 
-Avoid unnecessary destructuring. Use dot notation to preserve context.
+Avoid unnecessary destructuring. Use dot notation to preserve context:
 
 ```ts
 // Good
@@ -67,7 +154,7 @@ const { a, b } = obj
 
 ### Variables
 
-Prefer `const` over `let`. Use ternaries or early returns instead of reassignment.
+Prefer `const` over `let`. Use ternaries or early returns instead of reassignment:
 
 ```ts
 // Good
@@ -81,7 +168,7 @@ else foo = 2
 
 ### Control Flow
 
-Avoid `else` statements. Prefer early returns.
+Avoid `else` statements. Prefer early returns:
 
 ```ts
 // Good
@@ -97,9 +184,28 @@ function foo() {
 }
 ```
 
-### Schema Definitions (Drizzle)
+### Error Handling
 
-Use snake_case for field names so column names don't need to be redefined as strings.
+Use the `@opencode-ai/util` error utilities:
+
+```ts
+import { NamedError } from "@opencode-ai/util/error"
+
+// Define error types with schemas
+export const MyError = NamedError.create(
+  "MyError",
+  z.object({
+    message: z.string(),
+  }),
+)
+
+// Use in code
+throw new MyError({ message: "Something went wrong" })
+```
+
+### Schema Definitions
+
+**Drizzle (snake_case)**: Use snake_case for field names so column names don't need to be redefined:
 
 ```ts
 // Good
@@ -117,12 +223,32 @@ const table = sqliteTable("session", {
 })
 ```
 
-## Testing
+**Zod**: Use `z.object()` for data schemas, `Schema.Class` for multi-field data in Effect code, and `Schema.brand` for single-value types.
 
-- Avoid mocks as much as possible
-- Test actual implementation, do not duplicate logic into tests
-- Tests cannot run from repo root (guard: `do-not-run-tests-from-root`); run from package dirs like `packages/opencode`.
+### Effect Framework (packages/opencode)
 
-## Type Checking
+When working with Effect:
 
-- Always run `bun typecheck` from package directories (e.g., `packages/opencode`), never `tsc` directly.
+- Use `Effect.gen(function* () { ... })` for composition
+- Use `Effect.fn("Domain.method")` for named/traced effects
+- Use `Effect.callback` for callback-based APIs
+- Use `Schema.TaggedErrorClass` for typed errors
+- Prefer `DateTime.nowAsDate` over `new Date()` when needing a `Date`
+- Use `Instance.bind(fn)` for native addon callbacks that need ALS context
+
+### Formatting
+
+Prettier config (from root `package.json`):
+
+```json
+{
+  "semi": false,
+  "printWidth": 120
+}
+```
+
+Use default Bun/Prettier formatting. Run `bun run --prettier --write` for formatting.
+
+### SolidJS (packages/app)
+
+- Always prefer `createStore` over multiple `createSignal` calls
