@@ -32,6 +32,7 @@ import { Permission } from "@/permission"
 import { Global } from "@/global"
 import type { LanguageModelV2Usage } from "@ai-sdk/provider"
 import { iife } from "@/util/iife"
+import { Filesystem } from "@/util/filesystem"
 
 export namespace Session {
   const log = Log.create({ service: "session" })
@@ -552,7 +553,7 @@ export namespace Session {
       conditions.push(eq(SessionTable.workspace_id, WorkspaceContext.workspaceID))
     }
     if (input?.directory) {
-      conditions.push(eq(SessionTable.directory, input.directory))
+      conditions.push(eq(SessionTable.directory, Filesystem.normalizeDirectory(input.directory)))
     }
     if (input?.roots) {
       conditions.push(isNull(SessionTable.parent_id))
@@ -592,7 +593,7 @@ export namespace Session {
     const conditions: SQL[] = []
 
     if (input?.directory) {
-      conditions.push(eq(SessionTable.directory, input.directory))
+      conditions.push(eq(SessionTable.directory, Filesystem.normalizeDirectory(input.directory)))
     }
     if (input?.roots) {
       conditions.push(isNull(SessionTable.parent_id))
@@ -693,7 +694,7 @@ export namespace Session {
       return Database.use((db) => {
         const rows = db
           .update(SessionTable)
-          .set({ directory: input.directory, time_updated: time })
+          .set({ directory: Filesystem.normalizeDirectory(input.directory), time_updated: time })
           .where(eq(SessionTable.id, input.sessionID))
           .returning()
           .all()

@@ -200,4 +200,12 @@ export namespace Filesystem {
     }
     return result
   }
+
+  export function normalizeDirectory(p: string): string {
+    const value = p.replaceAll("\\", "/")
+    const drive = value.match(/^([A-Za-z]:)\/+$/)
+    if (drive) return `${drive[1]}/`
+    if (/^\/+$/i.test(value)) return "/"
+    return value.replace(/\/+$/, "")
+  }
 }
