@@ -245,9 +245,11 @@ export namespace Project {
     if (data.sandbox !== result.worktree && !result.sandboxes.includes(data.sandbox))
       result.sandboxes.push(data.sandbox)
     result.sandboxes = result.sandboxes.filter((x) => existsSync(x))
+    const normalizedWorktree = Filesystem.normalizeDirectory(result.worktree)
+    const normalizedSandboxes = result.sandboxes.map((x) => Filesystem.normalizeDirectory(x))
     const insert = {
       id: result.id,
-      worktree: result.worktree,
+      worktree: normalizedWorktree,
       vcs: result.vcs ?? null,
       name: result.name,
       icon_url: result.icon?.url,
@@ -255,18 +257,18 @@ export namespace Project {
       time_created: result.time.created,
       time_updated: result.time.updated,
       time_initialized: result.time.initialized,
-      sandboxes: result.sandboxes,
+      sandboxes: normalizedSandboxes,
       commands: result.commands,
     }
     const updateSet = {
-      worktree: result.worktree,
+      worktree: normalizedWorktree,
       vcs: result.vcs ?? null,
       name: result.name,
       icon_url: result.icon?.url,
       icon_color: result.icon?.color,
       time_updated: result.time.updated,
       time_initialized: result.time.initialized,
-      sandboxes: result.sandboxes,
+      sandboxes: normalizedSandboxes,
       commands: result.commands,
     }
     Database.use((db) =>

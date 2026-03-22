@@ -1,4 +1,6 @@
-const normalize = (directory: string) => directory.replace(/[\\/]+$/, "")
+import { normalizeDirectory } from "@opencode-ai/util/path"
+
+const normalize = (directory: string) => normalizeDirectory(directory)
 
 type State =
   | {

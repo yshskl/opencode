@@ -303,12 +303,13 @@ export namespace Session {
     directory: string
     permission?: Permission.Ruleset
   }) {
+    const normalizedDirectory = Filesystem.normalizeDirectory(input.directory)
     const result: Info = {
       id: SessionID.descending(input.id),
       slug: Slug.create(),
       version: Installation.VERSION,
       projectID: Instance.project.id,
-      directory: input.directory,
+      directory: normalizedDirectory,
       workspaceID: input.workspaceID,
       parentID: input.parentID,
       title: input.title ?? createDefaultTitle(!!input.parentID),

@@ -26,6 +26,7 @@ import { previewSelectedLines } from "@opencode-ai/ui/pierre/selection-bridge"
 import { Button } from "@opencode-ai/ui/button"
 import { showToast } from "@opencode-ai/ui/toast"
 import { base64Encode, checksum } from "@opencode-ai/util/encode"
+import { normalizeDirectory } from "@opencode-ai/util/path"
 import { useNavigate, useSearchParams } from "@solidjs/router"
 import { NewSessionView, SessionHeader } from "@/components/session"
 import { useComments } from "@/context/comments"
@@ -551,7 +552,7 @@ export default function Page() {
   const newSessionWorktree = createMemo(() => {
     if (store.newSessionWorktree === "create") return "create"
     const project = sync.project
-    if (project && sdk.directory !== project.worktree) return sdk.directory
+    if (project && normalizeDirectory(sdk.directory) !== normalizeDirectory(project.worktree)) return sdk.directory
     return "main"
   })
 
