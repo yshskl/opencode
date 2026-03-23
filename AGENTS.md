@@ -252,3 +252,78 @@ Use default Bun/Prettier formatting. Run `bun run --prettier --write` for format
 ### SolidJS (packages/app)
 
 - Always prefer `createStore` over multiple `createSignal` calls
+
+---
+
+## 智能体协作流程 (Agent Collaboration Workflow)
+
+### 概述
+
+本项目实现了基于Skills的智能体协作流程，用于软件开发全流程管理。
+
+### 环境说明
+
+```
+当前有两个opencode实例：
+
+1. npm安装版 (当前对话使用)
+   - 端口：4096 (web)
+
+2. git仓库版 (代码修改位置)
+   - 路径：D:\project\opencode-lab
+   - 后端端口：4097
+   - 前端端口：3000
+
+配置文件创建在：D:\project\opencode-lab\.opencode\
+全局配置在：C:\Users\LEGION-B\.config\opencode\
+```
+
+### 核心组件
+
+| 组件                  | 全局路径                                             | 项目路径                                    | 说明           |
+| --------------------- | ---------------------------------------------------- | ------------------------------------------- | -------------- |
+| 主智能体              | `~/.config/opencode/agents/task-coordinator.md`      | `.opencode/agents/task-coordinator.md`      | 任务协调智能体 |
+| workflow skill        | `~/.config/opencode/skills/workflow/SKILL.md`        | `.opencode/skills/workflow/SKILL.md`        | 协作流程规范   |
+| atomic-task skill     | `~/.config/opencode/skills/atomic-task/SKILL.md`     | `.opencode/skills/atomic-task/SKILL.md`     | 原子任务定义   |
+| reporting skill       | `~/.config/opencode/skills/reporting/SKILL.md`       | `.opencode/skills/reporting/SKILL.md`       | 结果汇总规范   |
+| context-manager skill | `~/.config/opencode/skills/context-manager/SKILL.md` | `.opencode/skills/context-manager/SKILL.md` | 上下文管理     |
+| quality-gates skill   | `~/.config/opencode/skills/quality-gates/SKILL.md`   | `.opencode/skills/quality-gates/SKILL.md`   | 质量门禁       |
+| task-templates skill  | `~/.config/opencode/skills/task-templates/SKILL.md`  | `.opencode/skills/task-templates/SKILL.md`  | 任务模板库     |
+
+### 协作流程
+
+```
+用户输入 → task-coordinator → 需求分析 → 任务分解 → 执行任务 → 结果汇总
+```
+
+### 使用方法
+
+1. 用户提出原始需求
+2. task-coordinator 调用 requirement-analyzer 分析需求
+3. 使用 atomic-task skill 分解为原子任务
+4. 通过 context-manager skill 管理上下文（文件存储/读取）
+5. 调度子智能体执行各原子任务
+6. 使用 quality-gates skill 进行质量门禁检查
+7. 使用 reporting skill 生成汇总报告
+
+### 子智能体池
+
+| 任务类型   | 子智能体               |
+| ---------- | ---------------------- |
+| 需求分析   | `requirement-analyzer` |
+| 提示词优化 | `prompt-optimizer`     |
+| 架构设计   | `system-architect`     |
+| 后端开发   | `backend-developer`    |
+| 前端开发   | `frontend-developer`   |
+| 数据库设计 | `database-designer`    |
+| 代码审查   | `code-reviewer`        |
+| 测试       | `integration-tester`   |
+| 部署       | `devops-deployer`      |
+| 文档       | `docs`                 |
+| 代码探索   | `explore`              |
+
+### 上下文传递规则
+
+- ✅ 使用路径传递：传递文件路径而非完整内容
+- ❌ 禁止直接传递代码/文件内容在prompt中
+- 通过 context-manager skill 写入/读取上下文文件
