@@ -4,6 +4,7 @@ import { Icon } from "@opencode-ai/ui/icon"
 import { useNavigate } from "@solidjs/router"
 import { createMemo, For, Show, createSignal } from "solid-js"
 import { base64Encode } from "@opencode-ai/util/encode"
+import { normalizeDirectory } from "@opencode-ai/util/path"
 import { useSDK } from "@/context/sdk"
 import { useLanguage } from "@/context/language"
 import { getRelativeTime } from "@/utils/time"
@@ -75,7 +76,7 @@ export function DialogSessionList() {
     if (!session) return
 
     try {
-      await migrateSession(session.id, newDirectory, sdk.url)
+      await migrateSession(session.id, normalizeDirectory(newDirectory), sdk.url)
       showToast({
         title: language.t("command.sessions.migrate.success"),
       })
@@ -161,7 +162,7 @@ export function DialogSessionList() {
                         >
                           <div class="flex flex-col min-w-0 flex-1">
                             <span class="text-14-regular text-text-strong truncate">{session.title}</span>
-                            <span class="text-12-regular text-text-subtle truncate">{session.directory}</span>
+                            <span class="text-12-regular text-text-subtle truncate">{normalizeDirectory(session.directory)}</span>
                             <span class="text-12-regular text-text-subtle">
                               {getRelativeTime(session.time.updated, language.t)}
                             </span>
